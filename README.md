@@ -1,11 +1,3 @@
----
-# Bazy danych
-
-
-**Autorzy:** Michał Fidelus, Michał Pęgiel, Jakub Olech
-
---- 
-
 # 1.	Wymagania i funkcje systemu
 
 ### Użytkownicy
