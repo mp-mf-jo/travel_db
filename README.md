@@ -29,23 +29,155 @@
 (Dla każdej tabeli kod + opis w formie tabelki + kod DDL)
 
 
-Nazwa tabeli: (nazwa tabeli)
-- Opis: (opis tabeli, komentarz)
+## Nazwa tabeli: Orders
+- Opis: Lista zamówień oraz użytkowników, którzy je złożyli
 
 | Nazwa atrybutu | Typ | Opis/Uwagi |
 | -------------- | --- | ---------- |
-| Atrybut 1 …    |     |            |
-| Atrybut 2 …    |     |            |
+| OrderID    |   int  |   PK   |
+| CustomerID   |   int  |    PK   |
 
 
 - kod DDL
 
 ```sql
-create table tab1 (
-   a int,
-   b varchar(10)
-)
+
 ```
+
+## Nazwa tabeli: OrderDetails
+- Opis: Szczegóły zamoówienia
+
+| Nazwa atrybutu | Typ | Opis/Uwagi |
+| -------------- | --- | ---------- |
+|  OrderDetailID  |  int   |     PK       |
+|  OrderID |  int   |    FK   -> Orders    |
+|  TripID  |  int   |    FK   -> Trips     |
+|  OrderDate  |  datetime   |   data złozenia zamówienia         |
+|  AttendeesNumber  |  int   |    ilość uczestników podawana w momencie rezerwacji        |
+|  OrderPrice  |  money   |    Cena wycieczki        |
+
+
+- kod DDL
+
+```sql
+
+```
+
+## Nazwa tabeli: Trips
+- Opis: Dostępne wycieczki oraz informacje o nich
+
+| Nazwa atrybutu | Typ | Opis/Uwagi |
+| -------------- | --- | ---------- |
+|  TripID  |  int   |     PK       |
+|  StartDate  |  datetime   |    data rozpoczęcia wycieczki        |
+|  EndDate  |  datetime   |      data zakończenia wycieczki      |
+|  Price  |  money   |    cena wycieczki od osoby     |
+|  Limit  |  int   |     liczba dostępnych miejsc na wycieczce       |
+|  Description  |  nvachar   |     dodatkowe informacje o wycieczce       |
+| SellStartDate | datetime | data rozpoczęcia sprzedaży |
+
+- kod DDL
+
+```sql
+
+```
+
+## Nazwa tabeli: AttractionOrders
+- Opis: Zamówienia atrakcji oraz informacje powiązane z zamówieniami
+
+| Nazwa atrybutu | Typ | Opis/Uwagi |
+| -------------- | --- | ---------- |
+| AttractionOrderID   | int    |    PK        |
+| OrderID   |  int   |    FK -> AttractionAttendees        |
+| AttracionID   |  int   |  FK -> Attractions          |
+| AttendeesNumber   | int    |  ilość uczestników podawana w momencie rezerwacji atrakcji          |
+| OrderPrice   |  money   |    cena zamówienia        |
+| OrderDate   |  datetime   |  data złożenia zamówienia          |
+
+
+- kod DDL
+
+```sql
+
+```
+
+## Nazwa tabeli: Attracions
+- Opis: Lista dostępnych atrakcji oraz informacje o nich
+
+| Nazwa atrybutu | Typ | Opis/Uwagi |
+| -------------- | --- | ---------- |
+|  AttractionID  |  int   |   PK         |
+| TripID  | int    |     DK -> Trips       |
+| StartDate   |  datetime   |    data rozpoczęcia atrakcji        |
+| EndDate   |   datetime  |     data zakończenia atrakcji       |
+| Price   |  money   |    cena atrakcji za osobę        |
+| Limit   |  int   |   liczba dostępnch miejsc         |
+
+
+- kod DDL
+
+```sql
+
+```
+
+## Nazwa tabeli: Attendees
+- Opis: Lista uczestników wycieczki i informacje o nich
+
+| Nazwa atrybutu | Typ | Opis/Uwagi |
+| -------------- | --- | ---------- |
+|  AttendeeID  |  int   |   PK         |
+|  OrderID  |   int  |     FK -> Orders       |
+|  FirstName  |  nvachar   |   imię         |
+|   LastName |   nvachar  |    nazwisko        |
+|  Age  | int    |    wiek        |
+
+
+- kod DDL
+
+```sql
+
+```
+
+## Nazwa tabeli: Customers
+- Opis: Lista klientów składających zamówienia
+
+| Nazwa atrybutu | Typ | Opis/Uwagi |
+| -------------- | --- | ---------- |
+|  CustomerID  |  int   |    PK        |
+|  FirstName  |   nvachar  |    imię        |
+|   LastName |  nvachar   |      nazwisko      |
+|  CompanyName  |   nvachar  |  N  nazwa firmy        |
+|  Email  |  nvachar   |   adres mailowy         |
+|  PhoneNumber  |  nvachar   |    numer telefonu        |
+
+
+- kod DDL
+
+```sql
+
+```
+
+
+## Nazwa tabeli: Payments
+- Opis: Lista opłat za zamówienia
+
+| Nazwa atrybutu | Typ | Opis/Uwagi |
+| -------------- | --- | ---------- |
+|  PaymentID  |  int   |    PK        |
+|  OrderID  |  int   |     FK -> Orders       |
+|  PaymentDate  |  datetime   |     data dokonania płatności       |
+|  Amount  | money    |    Zapłacona kwota        |
+|  Type  |  nvachar   |     Forma płatności       |
+
+
+- kod DDL
+
+```sql
+
+```
+
+
+
 
 
 # 3.  Widoki, procedury/funkcje, triggery 
