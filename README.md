@@ -32,10 +32,11 @@
 ## Nazwa tabeli: Orders
 - Opis: Lista zamówień oraz użytkowników, którzy je złożyli
 
-| Nazwa atrybutu | Typ | Opis/Uwagi      |
-|----------------|-----|-----------------|
-| OrderID        | int | PK              |
-| CustomerID     | int | FK -> Customers |
+| Nazwa atrybutu | Typ | Opis/Uwagi                 |
+|----------------|-----|----------------------------|
+| OrderID        | int | PK                         |
+| CustomerID     | int | FK -> Customers            |
+| Active         | int | 1 - aktywne, 0 - anulowane |
 
 
 - kod DDL
@@ -54,7 +55,7 @@
 | TripID          | int      | FK   -> Trips                                    |
 | OrderDate       | datetime | data złozenia zamówienia                         |
 | AttendeesNumber | int      | ilość uczestników podawana w momencie rezerwacji |
-| OrderPrice      | money    | Cena wycieczki                                   |
+| OrderPrice      | money    | cena wycieczki                                   |
 
 
 - kod DDL
@@ -69,12 +70,13 @@
 | Nazwa atrybutu | Typ      | Opis/Uwagi                            |
 |----------------|----------|---------------------------------------|
 | TripID         | int      | PK                                    |
-| StartDate      | datetime | data rozpoczęcia wycieczki            |
-| EndDate        | datetime | data zakończenia wycieczki            |
+| StartDate      | date | data rozpoczęcia wycieczki            |
+| EndDate        | date | data zakończenia wycieczki            |
 | Price          | money    | cena wycieczki od osoby               |
 | Limit          | int      | liczba dostępnych miejsc na wycieczce |
 | Description    | nvachar  | dodatkowe informacje o wycieczce      |
 | SellStartDate  | datetime | data rozpoczęcia sprzedaży            |
+| Country        | nvachar  | kraj wycieczki                        |
 
 - kod DDL
 
@@ -93,6 +95,7 @@
 | AttendeesNumber   | int      | ilość uczestników podawana w momencie rezerwacji atrakcji |
 | OrderPrice        | money    | cena zamówienia                                           |
 | OrderDate         | datetime | data złożenia zamówienia                                  |
+| Active            | int      | 1 - aktywne, 0 - anulowane                                |
 
 
 - kod DDL
@@ -129,7 +132,7 @@
 | OrderID        | int     | FK -> Orders |
 | FirstName      | nvachar | imię         |
 | LastName       | nvachar | nazwisko     |
-| Age            | int     | wiek         |
+| BirthDate            | date     | wiek         |
 
 
 - kod DDL
