@@ -35,7 +35,7 @@
 | Nazwa atrybutu | Typ | Opis/Uwagi |
 | -------------- | --- | ---------- |
 | OrderID    |   int  |   PK   |
-| CustomerID   |   int  |    PK   |
+| CustomerID   |   int  |    FK -> Customers   |
 
 
 - kod DDL
