@@ -40,11 +40,15 @@
 
 ```sql
 CREATE TABLE Orders (
-    OrderID int  NOT NULL,
+    OrderID int  NOT NULL IDENTITY(1, 1),
     CustomerID int  NOT NULL,
     Active int  NOT NULL DEFAULT 1 CHECK (Active = 1 or Active = 0),
     CONSTRAINT Orders_pk PRIMARY KEY  (OrderID)
 );
+
+ALTER TABLE Orders ADD CONSTRAINT Orders_Customers
+    FOREIGN KEY (CustomerID)
+    REFERENCES Customers (CustomerID);
 ```
 
 ## Nazwa tabeli: OrderDetails
@@ -64,7 +68,7 @@ CREATE TABLE Orders (
 
 ```sql
 CREATE TABLE OrderDetails (
-    OrderDetailID int  NOT NULL,
+    OrderDetailID int  NOT NULL IDENTITY(1, 1),
     OrderID int  NOT NULL,
     TripID int  NOT NULL,
     OrderDate datetime  NOT NULL,
@@ -72,6 +76,14 @@ CREATE TABLE OrderDetails (
     OrderPrice money  NOT NULL DEFAULT 0 CHECK (OrderPrice > 0),
     CONSTRAINT OrderDetails_pk PRIMARY KEY  (OrderDetailID)
 );
+
+ALTER TABLE OrderDetails ADD CONSTRAINT OrderDetails_Orders
+    FOREIGN KEY (OrderID)
+    REFERENCES Orders (OrderID);
+
+ALTER TABLE OrderDetails ADD CONSTRAINT OrderDetails_Trips
+    FOREIGN KEY (TripID)
+    REFERENCES Trips (TripID);
 ```
 
 ## Nazwa tabeli: Trips
@@ -92,7 +104,7 @@ CREATE TABLE OrderDetails (
 
 ```sql
 CREATE TABLE Trips (
-    TripID int  NOT NULL,
+    TripID int  NOT NULL IDENTITY(1, 1),
     StartDate date  NOT NULL,
     EndDate date  NOT NULL,
     Price money  NOT NULL DEFAULT 0 CHECK (Price > 0),
@@ -122,7 +134,7 @@ CREATE TABLE Trips (
 
 ```sql
 CREATE TABLE AttractionsOrders (
-    AttractionOrderID int  NOT NULL,
+    AttractionOrderID int  NOT NULL IDENTITY(1, 1),
     OrderID int  NOT NULL,
     AttractionID int  NOT NULL,
     AttendeesNumber int  NOT NULL,
@@ -131,6 +143,14 @@ CREATE TABLE AttractionsOrders (
     Active int  NOT NULL DEFAULT 1 CHECK (Active = 1 or Active = 0),
     CONSTRAINT AttractionsOrders_pk PRIMARY KEY  (AttractionOrderID)
 );
+
+ALTER TABLE AttractionsOrders ADD CONSTRAINT AttractionsOrders_Attractions
+    FOREIGN KEY (AttractionID)
+    REFERENCES Attractions (AttractionID);
+
+ALTER TABLE AttractionsOrders ADD CONSTRAINT AttractionsOrders_Orders
+    FOREIGN KEY (OrderID)
+    REFERENCES Orders (OrderID);
 ```
 
 ## Nazwa tabeli: Attractions
@@ -150,7 +170,7 @@ CREATE TABLE AttractionsOrders (
 
 ```sql
 CREATE TABLE Attractions (
-    AttractionID int  NOT NULL,
+    AttractionID int  NOT NULL IDENTITY(1, 1),
     TripID int  NOT NULL,
     StartDate datetime  NOT NULL,
     EndDate datetime  NOT NULL,
@@ -158,6 +178,10 @@ CREATE TABLE Attractions (
     Limit int  NOT NULL DEFAULT 0 CHECK (Limit > 0),
     CONSTRAINT Attractions_pk PRIMARY KEY  (AttractionID)
 );
+
+ALTER TABLE Attractions ADD CONSTRAINT Attractions_Trips
+    FOREIGN KEY (TripID)
+    REFERENCES Trips (TripID);
 ```
 
 ## Nazwa tabeli: Attendees
@@ -176,13 +200,17 @@ CREATE TABLE Attractions (
 
 ```sql
 CREATE TABLE Attendees (
-    AttendeeID int  NOT NULL,
+    AttendeeID int  NOT NULL IDENTITY(1, 1),
     OrderID int  NOT NULL,
     FirstName nvarchar  NOT NULL,
     LastName nvarchar  NOT NULL,
     Birthdate date  NOT NULL,
     CONSTRAINT Attendees_pk PRIMARY KEY  (AttendeeID)
 );
+
+ALTER TABLE Attendees ADD CONSTRAINT Attendees_Orders
+    FOREIGN KEY (OrderID)
+    REFERENCES Orders (OrderID);
 ```
 
 ## Nazwa tabeli: Customers
@@ -202,7 +230,7 @@ CREATE TABLE Attendees (
 
 ```sql
 CREATE TABLE Customers (
-    CustomerID int  NOT NULL,
+    CustomerID int  NOT NULL IDENTITY(1, 1),
     FirstName nvarchar  NOT NULL,
     LastName nvarchar  NOT NULL,
     CompanyName nvarchar  NULL,
@@ -229,16 +257,20 @@ CREATE TABLE Customers (
 
 ```sql
 CREATE TABLE Payments (
-    PaymentID int  NOT NULL,
+    PaymentID int  NOT NULL IDENTITY(1, 1),
     OrderID int  NOT NULL,
     PaymentDate datetime  NOT NULL,
     Amount money  NOT NULL DEFAULT 0 CHECK (Amount >0),
     Type nvarchar  NOT NULL,
     CONSTRAINT Payments_pk PRIMARY KEY  (PaymentID)
 );
+
+ALTER TABLE Payments ADD CONSTRAINT Payments_Orders
+    FOREIGN KEY (OrderID)
+    REFERENCES Orders (OrderID);
 ```
 
-# Nazwa tabeli: AttractionAttendees
+## Nazwa tabeli: AttractionAttendees
 - Opis: Tabela łącząca uczestników wycieczki z wykupionymi atrakcjami
 
 | Nazwa atrybutu   | Typ | Opis/Uwagi                  |
@@ -253,6 +285,14 @@ CREATE TABLE AttractionAttendees (
     AttractionOrderID int  NOT NULL,
     CONSTRAINT AttractionAttendees_pk PRIMARY KEY  (AttendeeID,AttractionOrderID)
 );
+
+ALTER TABLE AttractionAttendees ADD CONSTRAINT AttractionAttendees_Attendees
+    FOREIGN KEY (AttendeeID)
+    REFERENCES Attendees (AttendeeID);
+
+ALTER TABLE AttractionAttendees ADD CONSTRAINT AttractionAttendees_AttractionsOrders
+    FOREIGN KEY (AttractionOrderID)
+    REFERENCES AttractionsOrders (AttractionOrderID);
 ```
 
 # 3.  Widoki, procedury/funkcje, triggery 
