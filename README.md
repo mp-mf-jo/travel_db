@@ -301,6 +301,21 @@ ALTER TABLE AttractionAttendees ADD CONSTRAINT AttractionAttendees_AttractionsOr
 ## Widoki
 
 (dla każdego widoku należy wkleić kod polecenia definiującego widok wraz z komentarzem)
+### Nazwa Widoku = payments_summary
+Widok służy do weryfikacji płatności.
+
+| Nazwa atrybutu   | Typ | Opis/Uwagi                  |
+|------------------|-----|-----------------------------|
+| CustomerID       | int | PK, FK -> Attendees         |
+| OrderID          | int | PK, FK -> AttractionsOrders |
+| TripPrice               | int | PK, FK -> Attendees         |
+| TotalAttractionPrice          | int | PK, FK -> AttractionsOrders |
+| AlreadyPaid      | int | PK, FK -> Attendees         |
+
+- kod DDL
+```sql
+
+```
 
 
 ## Procedury/funkcje
