@@ -1,5 +1,5 @@
+## Michał Fidelus, Jakub Olech, Michał Pęgiel 
 # 1.	Wymagania i funkcje systemu
-
 ### Użytkownicy
 
 - Tworzenie konta 
