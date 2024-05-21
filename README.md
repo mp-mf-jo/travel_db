@@ -301,7 +301,7 @@ ALTER TABLE AttractionAttendees ADD CONSTRAINT AttractionAttendees_AttractionsOr
 ## Widoki
 
 (dla każdego widoku należy wkleić kod polecenia definiującego widok wraz z komentarzem)
-### Nazwa Widoku = payments_summary
+### Nazwa widoku: payments_summary
 Widok służy do weryfikacji płatności.
 
 | Nazwa atrybutu   | Typ | Opis/Uwagi                  |
@@ -314,7 +314,15 @@ Widok służy do weryfikacji płatności.
 
 - kod DDL
 ```sql
-
+create or alter view vw_payments_summary
+as
+select c.CustomerID as CustomerID, o.OrderID, max(od.OrderPrice) as TripPrice,
+sum(ao.OrderPrice) as TotalAttractionsPrice, max(Amount) as AlreadyPaid from Orders o
+join Customers c on c.CustomerID = o.CustomerID
+join OrderDetails od on o.OrderID = od.OrderID
+left join AttractionsOrders ao on o.OrderID = ao.OrderID
+left join Payments p on o.OrderID = p.OrderID
+group by c.CustomerID, o.OrderID
 ```
 
 
