@@ -381,8 +381,60 @@ where l.Limit > l.BookedAttendees and getdate() between a.Price and a.StartDate
 
 ## Procedury/funkcje
 
-(dla każdej procedury/funkcji należy wkleić kod polecenia definiującego procedurę wraz z komentarzem)
+### Nazwa funkcji: f_list_order_attendees
+Funkcja zwraca listę uczestników zamówienia o podanym ID zamówienia.
+```sql
+create or alter function f_list_order_attendees (@OrderID int)
+returns table
+as return (
+    select AttendeeID from Attendees
+    where OrderID = @OrderID
+    );
+```
+### Nazwa funkcji: f_list_customer_orders
+Funkcja zwraca listę zamówień klienta o podanym ID klienta.
+```sql
+create or alter function f_list_customer_orders (@CustomerID int)
+returns table
+as return (
+    select T.TripID, T.StartDate, T.EndDate, T.Price, T.Description, T.Country
+    from Trips T
+    join OrderDetails OD on T.TripID = OD.TripID
+    join Orders O on OD.OrderID = O.OrderID
+    where CustomerID = @CustomerID
+);
+```
+### Nazwa funkcji: f_is_order_paid
+Funkcja zwraca 1 jeśli zamówienie o podanym ID jest opłacone, 0 w przeciwnym wypadku.
+```sql
+create or alter function f_is_order_paid (@OrderID int)
+returns int
+as
+begin
+    declare @total_cost int;
+    declare @already_paid int;
+    declare @return_value int;
 
+    set @total_cost = (select TripPrice + TotalAttractionsPrice from vw_payments_summary where OrderID = @OrderID);
+    set @already_paid = (select AlreadyPaid from vw_payments_summary);
+
+    if @already_paid < @total_cost set @return_value = 0 else set @return_value = 1;
+    return @return_value;
+end;
+```
+### Nazwa funkcji: f_list_customer_orders_attactions
+Funkcja zwraca listę atrakcji zamówionych przez klienta o podanym ID.
+```sql
+create or alter function f_list_customer_orders_attactions (@CustomerID int)
+returns table
+as return (
+    select a.attractionid, a.startdate, a.enddate, a.price, a.limit
+    from attractions a
+    join attractionsorders ao on a.attractionid = ao.attractionid
+    join orders o on ao.orderid = o.orderid
+    where o.customerid = @CustomerID
+);
+```
 ## Triggery
 
 (dla każdego triggera należy wkleić kod polecenia definiującego trigger wraz z komentarzem)
