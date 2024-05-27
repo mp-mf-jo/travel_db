@@ -340,7 +340,7 @@ Widok służy do wyświetlenia dostępnych w tym momencie wycieczek na bazie dat
 ```sql
 create or alter view vw_aviableTrips
 as
-select StartDate, EndDate,Price, t.Limit-l.BookedAttendees as PlacesLeft,[Description],Country from Trips t
+select t.TripID, StartDate, EndDate,Price, t.Limit-l.BookedAttendees as PlacesLeft,[Description],Country from Trips t
 join (
 select sum(od.AttendeesNumber) as BookedAttendees, od.TripID, max(t.Limit) as Limit from orders o 
 join OrderDetails od on od.OrderID = o.OrderID
@@ -368,7 +368,7 @@ Widok służy do wyświetlenia dostępnych w tym momencie atrakcji, dodatkowo po
 ```sql
 create or alter view vw_aviableAttraction 
 as
-select StartDate, EndDate,Price, a.Limit-l.BookedAttendees as PlacesLeft from Attractions a
+select a.AttractionID, StartDate, EndDate,Price, a.Limit-l.BookedAttendees as PlacesLeft from Attractions a
 join (
 select sum(o.AttendeesNumber) as BookedAttendees,a.AttractionID, max(a.Limit) as Limit from AttractionsOrders o
 join Attractions a on o.AttractionID = a.AttractionID
