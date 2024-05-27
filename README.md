@@ -300,7 +300,6 @@ ALTER TABLE AttractionAttendees ADD CONSTRAINT AttractionAttendees_AttractionsOr
 
 ## Widoki
 
-(dla każdego widoku należy wkleić kod polecenia definiującego widok wraz z komentarzem)
 ### Nazwa widoku: payments_summary
 Widok służy do weryfikacji płatności.
 
@@ -324,7 +323,7 @@ left join AttractionsOrders ao on o.OrderID = ao.OrderID
 left join Payments p on o.OrderID = p.OrderID
 group by c.CustomerID, o.OrderID
 ```
-
+![vw](src/vw_payments_summary.png)
 ### Nazwa widoku: vw_aviableTrips
 Widok służy do wyświetlenia dostępnych w tym momencie wycieczek na bazie dat i limitu miejsc.
 
@@ -351,6 +350,7 @@ group by od.TripID
 where l.Limit > l.BookedAttendees and getdate() between t.SellStartDate and t.StartDate
 
 ```
+![vw](src/vw_aviableTrips.png)
 
 
 ### Nazwa widoku: vw_aviableAttraction 
@@ -375,9 +375,8 @@ join Attractions a on o.AttractionID = a.AttractionID
 group by a.AttractionID
 ) as l on a.AttractionID = l.AttractionID
 where l.Limit > l.BookedAttendees and getdate() between a.Price and a.StartDate
-
-
 ```
+![vw](src/vw_aviableAttraction.png)
 
 ## Procedury/funkcje
 
@@ -391,6 +390,7 @@ as return (
     where OrderID = @OrderID
     );
 ```
+![f_list_order_attendees](src/f_list_order_attendees.png)
 ### Nazwa funkcji: f_list_customer_orders
 Funkcja zwraca listę zamówień klienta o podanym ID klienta.
 ```sql
@@ -404,6 +404,7 @@ as return (
     where CustomerID = @CustomerID
 );
 ```
+![f_list_customer_orders](src/f_list_customer_orders.png)
 ### Nazwa funkcji: f_is_order_paid
 Funkcja zwraca 1 jeśli zamówienie o podanym ID jest opłacone, 0 w przeciwnym wypadku.
 ```sql
@@ -422,6 +423,7 @@ begin
     return @return_value;
 end;
 ```
+![f_is_order_paid](src/f_is_order_paid.png)
 ### Nazwa funkcji: f_list_customer_orders_attactions
 Funkcja zwraca listę atrakcji zamówionych przez klienta o podanym ID.
 ```sql
@@ -435,6 +437,7 @@ as return (
     where o.customerid = @CustomerID
 );
 ```
+![f_list_customer_orders_attactions](src/f_list_customer_orders_attractions.png)
 ## Triggery
 
 (dla każdego triggera należy wkleić kod polecenia definiującego trigger wraz z komentarzem)
