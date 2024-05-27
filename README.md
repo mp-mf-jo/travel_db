@@ -308,9 +308,9 @@ Widok służy do weryfikacji płatności.
 |------------------|-----|-----------------------------|
 | CustomerID       | int | PK, FK -> Attendees         |
 | OrderID          | int | PK, FK -> AttractionsOrders |
-| TripPrice               | int | PK, FK -> Attendees         |
-| TotalAttractionPrice          | int | PK, FK -> AttractionsOrders |
-| AlreadyPaid      | int | PK, FK -> Attendees         |
+| TripPrice               | int | cena wycieczki         |
+| TotalAttractionPrice          | int | Łączna cena za atrakcje|
+| AlreadyPaid      | int | Uiszczona opłata na moment bieżący         |
 
 - kod DDL
 ```sql
@@ -325,6 +325,32 @@ left join Payments p on o.OrderID = p.OrderID
 group by c.CustomerID, o.OrderID
 ```
 
+### Nazwa widoku: vw_aviableTrips
+Widok służy do wyświetlenia dostępnych w tym momencie wycieczek na bazie dat i limitu miejsc.
+
+| Nazwa atrybutu   | Typ | Opis/Uwagi                  |
+|------------------|-----|-----------------------------|
+| StartDate      | int | Data początku wycieczki         |
+| EndDate          | int | Data końca wycieczki  |
+| Price               | int | PK, FK -> Cena za wycieczke         |
+| PlacesLeft          | int | PK, FK -> Pozostałe miejsca limit- booked |
+| Description      | int | Opis wycieczki         |
+| Country      | int | Kraj docelowy wycieczki         |
+
+- kod DDL
+```sql
+create or alter view vw_aviableTrips
+as
+select StartDate, EndDate,Price, t.Limit-l.BookedAttendees as PlacesLeft,[Description],Country from Trips t
+join (
+select sum(od.AttendeesNumber) as BookedAttendees, od.TripID, max(t.Limit) as Limit from orders o 
+join OrderDetails od on od.OrderID = o.OrderID
+join Trips t on t.TripID = od.TripID
+group by od.TripID
+) as l on t.TripID = l.TripID
+where l.Limit > l.BookedAttendees and getdate() between t.SellStartDate and t.StartDate
+
+```
 
 ## Procedury/funkcje
 
