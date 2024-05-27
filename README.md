@@ -332,8 +332,8 @@ Widok służy do wyświetlenia dostępnych w tym momencie wycieczek na bazie dat
 |------------------|-----|-----------------------------|
 | StartDate      | int | Data początku wycieczki         |
 | EndDate          | int | Data końca wycieczki  |
-| Price               | int | PK, FK -> Cena za wycieczke         |
-| PlacesLeft          | int | PK, FK -> Pozostałe miejsca limit- booked |
+| Price               | int | Cena za wycieczke         |
+| PlacesLeft          | int | Pozostałe miejsca limit - booked |
 | Description      | int | Opis wycieczki         |
 | Country      | int | Kraj docelowy wycieczki         |
 
