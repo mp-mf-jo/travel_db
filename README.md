@@ -352,6 +352,33 @@ where l.Limit > l.BookedAttendees and getdate() between t.SellStartDate and t.St
 
 ```
 
+
+### Nazwa widoku: vw_aviableAttraction 
+Widok służy do wyświetlenia dostępnych w tym momencie atrakcji, dodatkowo pokazuje pozostałą liczbę miejsc per wycieczka.
+
+| Nazwa atrybutu   | Typ | Opis/Uwagi                  |
+|------------------|-----|-----------------------------|
+| StartDate      | int | Data początku wycieczki         |
+| EndDate          | int | Data końca wycieczki  |
+| Price               | int | Cena za wycieczke         |
+| PlacesLeft          | int | Pozostałe miejsca limit - booked |
+
+
+- kod DDL
+```sql
+create or alter view vw_aviableAttraction 
+as
+select StartDate, EndDate,Price, a.Limit-l.BookedAttendees as PlacesLeft from Attractions a
+join (
+select sum(o.AttendeesNumber) as BookedAttendees,a.AttractionID, max(a.Limit) as Limit from AttractionsOrders o
+join Attractions a on o.AttractionID = a.AttractionID
+group by a.AttractionID
+) as l on a.AttractionID = l.AttractionID
+where l.Limit > l.BookedAttendees and getdate() between a.Price and a.StartDate
+
+
+```
+
 ## Procedury/funkcje
 
 (dla każdej procedury/funkcji należy wkleić kod polecenia definiującego procedurę wraz z komentarzem)
