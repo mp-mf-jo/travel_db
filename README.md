@@ -378,7 +378,7 @@ where l.Limit > l.BookedAttendees and getdate() between a.Price and a.StartDate
 ```
 ![vw](src/vw_aviableAttraction.png)
 
-## Procedury/funkcje
+## Funkcje
 
 ### Nazwa funkcji: f_list_order_attendees
 Funkcja zwraca listę uczestników zamówienia o podanym ID zamówienia.
@@ -438,6 +438,58 @@ as return (
 );
 ```
 ![f_list_customer_orders_attactions](src/f_list_customer_orders_attractions.png)
+
+## Procedury
+
+### Nazwa procedury: p_add_order
+Procedura pozwala dodać zamówienie do tabeli Orders, sprawda ona istnienie wycieczki o podanym ID w widoku dostępnych wycieczek, 
+klient o podanym ID, oraz czy dostępe jest odpowiednio tle miejsc iel podał wprowadzający. 
+```sql
+create or alter procedure p_add_order
+@orderID int, @CustomerID int, @OrderDetailID int, @TripID int, @AtendeesNumber int
+as
+begin
+declare @OrderPrice money;
+if not exists (select * from vw_aviableTrips where @TripID = TripId )
+    throw 50001, 'No aviable trip with such ID', 1;
+if not exists (select * from Customers where @CustomerID = CustomerID )
+    throw 50002, 'No aviable customer with such ID', 1;
+if @AtendeesNumber not between 0 and (select PlacesLeft from vw_aviableTrips where @TripID = TripID)
+    throw 50003, 'Invalid amount of Atendees', 1;
+select @OrderPrice = Price from Trips where TripID = @TripID* @AtendeesNumber;
+insert [Orders](OrderID, CustomerID)
+values(@orderid, @CustomerID);
+insert [OrderDetails](OrderDetailID, OrderID, TripID,OrderDate,AttendeesNumber,OrderPrice)
+values (@OrderDetailID,@orderID,@TripID,getdate(),@AtendeesNumber,@OrderPrice);
+end 
+);
+```
+### Nazwa procedury: p_add_attractionOrder
+Procedura pozwala dodać zamówienie do tabeli attractions, sprawdza ona czy w widoku dostępnych wyczieczek istnieje wycieczka o wprowadzanym ID,
+czy wprowadzona jest odpowiednia ilość miejsc, oraz czy istnieje zamówienie o podawanym ID do którego przypisana atrakcja i czy ta atrakcja 
+znajduje się w obrębie wycieczki która odnosi się do zamówienie.
+```sql
+create or alter procedure p_add_attractionOrder
+@orderID int, @AttractionOrderID int, @AttractionID int, @AtendeesNumber int
+as
+begin
+declare @OrderPrice money;
+declare @TripID int;
+select @TripID = TripID from OrderDetails where OrderID = @orderID;
+if not exists (select * from vw_aviableAttraction where @AttractionID = AttractionID )
+    throw 50001, 'No aviable Attraction with such ID', 1;
+if not exists (select * from Orders where @orderID = OrderID )
+    throw 50002, 'No aviable Order with such ID', 1;
+if @AtendeesNumber not between 0 and (select PlacesLeft from vw_aviableAttraction where @AttractionID = AttractionID)
+    throw 50003, 'Invalid amount of Atendees', 1;
+if not exists (select AttractionID from Attractions where TripID = @TripID and AttractionID = @AttractionID )
+    throw 50004, 'This attraction is not aviable on that trip', 1;
+select @OrderPrice = Price from Attractions where AttractionID = @AttractionID* @AtendeesNumber;
+insert [AttractionsOrders](AttractionOrderID,orderID,AttractionID,AttendeesNumber,OrderPrice,OrderDate)
+values(@AttractionOrderID,@orderID,@AttractionID,@AtendeesNumber,@OrderPrice,getdate());
+end 
+```
+
 ## Triggery
 
 (dla każdego triggera należy wkleić kod polecenia definiującego trigger wraz z komentarzem)
