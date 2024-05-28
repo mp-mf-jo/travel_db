@@ -497,4 +497,18 @@ end
 
 # 4. Inne
 
+### Uprawnienia
+Wydano uprawnienia dla 
+```sql
+use  u_fidelus
+
+create user u_olech from login u_olech ;  
+create user u_pegiel from login u_pegiel ;
+
+exec sp_addrolemember 'db_owner', u_olech ;
+exec sp_addrolemember 'db_owner', u_pegiel ;
+```
+### Generowanie danych
+Dane zostały wygenerowane za pomoca platformy Mockaroo: https://www.mockaroo.com/
+
 (informacja o sposobie wygenerowania danych, uprawnienia …)
