@@ -495,9 +495,56 @@ end
 
 ## Triggery
 
-(dla każdego triggera należy wkleić kod polecenia definiującego trigger wraz z komentarzem)
+### Nazwa triggera: tr_beforeTripCancel
 
+Trigger nie pozwala na anulowanie wycieczki jeżeli zaczyna się ona za mniej niż 7 dni.
+```sql
+CREATE TRIGGER tr_beforeTripCancel
+ON Orders
+INSTEAD OF UPDATE
+AS
+BEGIN
+    DECLARE @OrderID int, @NewActive int;
+    
+    SELECT @OrderID = i.OrderID, @NewActive = i.Active
+    FROM inserted i;
+    
+    IF EXISTS (SELECT * FROM OrderDetails JOIN Trips on OrderDetails.TripID = Trips.TripID WHERE OrderID = @OrderID AND DATEDIFF(day, StartDate, GETDATE()) < 7)
+    BEGIN
+        throw 50003, 'Cant cancel trip 7 days before its date', 1;
+    END
+    ELSE
+    BEGIN
+        UPDATE Orders
+        SET Active = @NewActive
+        WHERE OrderID = @OrderID;
+    END
+END;
+```
+![tr_beforeTripCancel](src/tr_beforeTripCancel.png)
 
+### Nazwa triggera: tr_afterAddAttraction
+
+Trigger sprawdza czy w przypadku dodania zamówienia atrakcji, czy ta atrakcja istnieje w obrębie wycieczki do której odnosi się zamówienie.
+```sql
+CREATE TRIGGER tr_afterAddAttraction
+ON AttractionsOrders
+AFTER INSERT AS
+BEGIN
+    DECLARE @OrderID int, @AttractionID int;
+    
+    SELECT @OrderID = i.OrderID, @AttractionID = i.AttractionID
+    FROM inserted i;
+    
+    IF NOT EXISTS (SELECT * FROM OrderDetails JOIN Attractions ON OrderDetails.TripID = Attractions.TripID WHERE AttractionID=@AttractionID AND OrderID=@OrderID )
+    BEGIN
+        ROLLBACK;
+        throw 50005, 'This attraction belongs to other trip', 1;
+    END
+END;
+```
+
+![tr_afterAddAttraction](src/tr_afterAddAttraction.png)
 # 4. Inne
 
 ### Uprawnienia
@@ -513,5 +560,4 @@ exec sp_addrolemember 'db_owner', u_pegiel ;
 ```
 ### Generowanie danych
 Dane zostały wygenerowane za pomoca platformy Mockaroo: https://www.mockaroo.com/
-
-(informacja o sposobie wygenerowania danych, uprawnienia …)
+Pozostałe dane zostały dodane ręcznie.
