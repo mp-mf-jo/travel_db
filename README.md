@@ -305,6 +305,8 @@ Widok służy do weryfikacji płatności.
 
 | Nazwa atrybutu   | Typ | Opis/Uwagi                  |
 |------------------|-----|-----------------------------|
+| FirstName       | int | Imię         |
+| LastName       | int | Nazwisko         |
 | CustomerID       | int | PK, FK -> Attendees         |
 | OrderID          | int | PK, FK -> AttractionsOrders |
 | TripPrice               | int | cena wycieczki         |
@@ -313,17 +315,16 @@ Widok służy do weryfikacji płatności.
 
 - kod DDL
 ```sql
-create or alter view vw_payments_summary
-as
-select c.CustomerID as CustomerID, o.OrderID, max(od.OrderPrice) as TripPrice,
+select max(c.FirstName) as FirstName, max(c.LastName) as LastName ,c.CustomerID as CustomerID, o.OrderID, max(od.OrderPrice) as TripPrice,
 sum(ao.OrderPrice) as TotalAttractionsPrice, max(Amount) as AlreadyPaid from Orders o
 join Customers c on c.CustomerID = o.CustomerID
 join OrderDetails od on o.OrderID = od.OrderID
 left join AttractionsOrders ao on o.OrderID = ao.OrderID
 left join Payments p on o.OrderID = p.OrderID
+where o.Active = 1 and ao.Active = 1
 group by c.CustomerID, o.OrderID
 ```
-![vw](src/vw_payments_summary.png)
+![vw](src/vw_payments_summary2.png)
 ### Nazwa widoku: vw_aviableTrips
 Widok służy do wyświetlenia dostępnych w tym momencie wycieczek na bazie dat i limitu miejsc.
 
