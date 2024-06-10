@@ -329,6 +329,7 @@ Widok służy do wyświetlenia dostępnych w tym momencie wycieczek na bazie dat
 
 | Nazwa atrybutu   | Typ | Opis/Uwagi                  |
 |------------------|-----|-----------------------------|
+| TripID      | int | ID wycieczki         |
 | StartDate      | int | Data początku wycieczki         |
 | EndDate          | int | Data końca wycieczki  |
 | Price               | int | Cena za wycieczke         |
@@ -358,9 +359,10 @@ Widok służy do wyświetlenia dostępnych w tym momencie atrakcji, dodatkowo po
 
 | Nazwa atrybutu   | Typ | Opis/Uwagi                  |
 |------------------|-----|-----------------------------|
-| StartDate      | int | Data początku wycieczki         |
-| EndDate          | int | Data końca wycieczki  |
-| Price               | int | Cena za wycieczke         |
+| AttractionID      | int | ID atrakcji         |
+| StartDate      | int | Data początku atrakcji         |
+| EndDate          | int | Data końca atrakcji  |
+| Price               | int | Cena za atrakcję         |
 | PlacesLeft          | int | Pozostałe miejsca limit - booked |
 
 
