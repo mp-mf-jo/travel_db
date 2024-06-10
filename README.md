@@ -351,7 +351,7 @@ group by od.TripID
 where l.Limit > l.BookedAttendees and getdate() between t.SellStartDate and t.StartDate
 
 ```
-![vw](src/vw_aviableTrips.png)
+![vw](src/viewAviableTrips.png)
 
 
 ### Nazwa widoku: vw_aviableAttraction 
@@ -378,7 +378,7 @@ group by a.AttractionID
 ) as l on a.AttractionID = l.AttractionID
 where l.Limit > l.BookedAttendees and getdate() between a.Price and a.StartDate
 ```
-![vw](src/vw_aviableAttraction.png)
+![vw](src/viewAviableAttractions.png)
 
 ## Funkcje
 
@@ -392,7 +392,7 @@ as return (
     where OrderID = @OrderID
     );
 ```
-![f_list_order_attendees](src/f_list_order_attendees.png)
+![f_list_order_attendees](src/FunctionlistOrderAttendees.png)
 ### Nazwa funkcji: f_list_customer_orders
 Funkcja zwraca listę zamówień klienta o podanym ID klienta.
 ```sql
