@@ -427,20 +427,20 @@ begin
 end;
 ```
 ![f_is_order_paid](src/f_is_order_paid.png)
-### Nazwa funkcji: f_list_customer_orders_attactions
-Funkcja zwraca listę atrakcji zamówionych przez klienta o podanym ID.
+### Nazwa funkcji: f_attractions_per_order
+Funkcja zwraca listę atrakcji przypisanych do zamówienia
 ```sql
-create or alter function f_list_customer_orders_attactions (@CustomerID int)
+create or alter function f_attractions_per_order (@OrderID int)
 returns table
 as return (
     select a.attractionid, a.startdate, a.enddate, a.price, a.limit
     from attractions a
     join attractionsorders ao on a.attractionid = ao.attractionid
     join orders o on ao.orderid = o.orderid
-    where o.customerid = @CustomerID
+    where o.OrderID = @OrderID
 );
 ```
-![f_list_customer_orders_attactions](src/f_list_customer_orders_attractions.png)
+![f_list_customer_orders_attactions](src/f_attractions_per_order.png)
 
 ## Procedury
 
