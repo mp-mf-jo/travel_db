@@ -408,22 +408,19 @@ as return (
 );
 ```
 ![f_list_customer_orders](src/f_list_customer_orders.png)
-### Nazwa funkcji: f_is_order_paid
+### Nazwa funkcji: f_is_order_paid_saldo
 Funkcja zwraca 1 jeśli zamówienie o podanym ID jest opłacone, 0 w przeciwnym wypadku.
 ```sql
-create or alter function f_is_order_paid (@OrderID int)
+create or alter function f_is_order_paid_saldo (@OrderID int)
 returns int
 as
 begin
     declare @total_cost int;
     declare @already_paid int;
-    declare @return_value int;
 
     set @total_cost = (select TripPrice + TotalAttractionsPrice from vw_payments_summary where OrderID = @OrderID);
-    set @already_paid = (select AlreadyPaid from vw_payments_summary);
-
-    if @already_paid < @total_cost set @return_value = 0 else set @return_value = 1;
-    return @return_value;
+    set @already_paid = (select AlreadyPaid from vw_payments_summary where OrderID = @OrderID);
+    return @total_cost - @already_paid;
 end;
 ```
 ![f_is_order_paid](src/f_is_order_paid.png)
@@ -452,18 +449,21 @@ create or alter procedure p_add_order
 @orderID int, @CustomerID int, @OrderDetailID int, @TripID int, @AtendeesNumber int
 as
 begin
-declare @OrderPrice money;
-if not exists (select * from vw_aviableTrips where @TripID = TripId )
-    throw 50001, 'No aviable trip with such ID', 1;
-if not exists (select * from Customers where @CustomerID = CustomerID )
-    throw 50002, 'No aviable customer with such ID', 1;
-if @AtendeesNumber not between 0 and (select PlacesLeft from vw_aviableTrips where @TripID = TripID)
-    throw 50003, 'Invalid amount of Atendees', 1;
-select @OrderPrice = Price from Trips where TripID = @TripID* @AtendeesNumber;
-insert [Orders](OrderID, CustomerID)
-values(@orderid, @CustomerID);
-insert [OrderDetails](OrderDetailID, OrderID, TripID,OrderDate,AttendeesNumber,OrderPrice)
-values (@OrderDetailID,@orderID,@TripID,getdate(),@AtendeesNumber,@OrderPrice);
+    declare @OrderPrice money;
+    if not exists (select * from vw_aviableTrips where @TripID = TripId )
+        throw 50001, 'No aviable trip with such ID', 1;
+
+    if not exists (select * from Customers where @CustomerID = CustomerID )
+        throw 50002, 'No aviable customer with such ID', 1;
+
+    if @AtendeesNumber not between 0 and (select PlacesLeft from vw_aviableTrips where @TripID = TripID)
+        throw 50003, 'Invalid amount of Atendees', 1;
+
+    select @OrderPrice = Price from Trips where TripID = @TripID* @AtendeesNumber;
+    insert [Orders](OrderID, CustomerID)
+    values(@orderid, @CustomerID);
+    insert [OrderDetails](OrderDetailID, OrderID, TripID,OrderDate,AttendeesNumber,OrderPrice)
+    values (@OrderDetailID,@orderID,@TripID,getdate(),@AtendeesNumber,@OrderPrice);
 end 
 );
 ```
@@ -476,20 +476,25 @@ create or alter procedure p_add_attractionOrder
 @orderID int, @AttractionOrderID int, @AttractionID int, @AtendeesNumber int
 as
 begin
-declare @OrderPrice money;
-declare @TripID int;
-select @TripID = TripID from OrderDetails where OrderID = @orderID;
-if not exists (select * from vw_aviableAttraction where @AttractionID = AttractionID )
-    throw 50001, 'No aviable Attraction with such ID', 1;
-if not exists (select * from Orders where @orderID = OrderID )
-    throw 50002, 'No aviable Order with such ID', 1;
-if @AtendeesNumber not between 0 and (select PlacesLeft from vw_aviableAttraction where @AttractionID = AttractionID)
-    throw 50003, 'Invalid amount of Atendees', 1;
-if not exists (select AttractionID from Attractions where TripID = @TripID and AttractionID = @AttractionID )
-    throw 50004, 'This attraction is not aviable on that trip', 1;
-select @OrderPrice = Price from Attractions where AttractionID = @AttractionID* @AtendeesNumber;
-insert [AttractionsOrders](AttractionOrderID,orderID,AttractionID,AttendeesNumber,OrderPrice,OrderDate)
-values(@AttractionOrderID,@orderID,@AttractionID,@AtendeesNumber,@OrderPrice,getdate());
+    declare @OrderPrice money;
+    declare @TripID int;
+    select @TripID = TripID from OrderDetails where OrderID = @orderID;
+
+    if not exists (select * from vw_aviableAttraction where @AttractionID = AttractionID )
+        throw 50001, 'No aviable Attraction with such ID', 1;
+
+    if not exists (select * from Orders where @orderID = OrderID )
+        throw 50002, 'No aviable Order with such ID', 1;
+
+    if @AtendeesNumber not between 0 and (select PlacesLeft from vw_aviableAttraction where @AttractionID = AttractionID)
+        throw 50003, 'Invalid amount of Atendees', 1;
+
+    if not exists (select AttractionID from Attractions where TripID = @TripID and AttractionID = @AttractionID )
+        throw 50004, 'This attraction is not aviable on that trip', 1;
+        
+    select @OrderPrice = Price from Attractions where AttractionID = @AttractionID* @AtendeesNumber;
+    insert [AttractionsOrders](AttractionOrderID,orderID,AttractionID,AttendeesNumber,OrderPrice,OrderDate)
+    values(@AttractionOrderID,@orderID,@AttractionID,@AtendeesNumber,@OrderPrice,getdate());
 end 
 ```
 
@@ -509,7 +514,10 @@ BEGIN
     SELECT @OrderID = i.OrderID, @NewActive = i.Active
     FROM inserted i;
     
-    IF EXISTS (SELECT * FROM OrderDetails JOIN Trips on OrderDetails.TripID = Trips.TripID WHERE OrderID = @OrderID AND DATEDIFF(day, StartDate, GETDATE()) < 7)
+    IF EXISTS (
+        SELECT * FROM OrderDetails 
+        JOIN Trips on OrderDetails.TripID = Trips.TripID 
+        WHERE OrderID = @OrderID AND DATEDIFF(day, StartDate, GETDATE()) < 7)
     BEGIN
         throw 50003, 'Cant cancel trip 7 days before its date', 1;
     END
@@ -535,8 +543,16 @@ BEGIN
     
     SELECT @OrderID = i.OrderID, @AttractionID = i.AttractionID
     FROM inserted i;
-    
-    IF NOT EXISTS (SELECT * FROM OrderDetails JOIN Attractions ON OrderDetails.TripID = Attractions.TripID WHERE AttractionID=@AttractionID AND OrderID=@OrderID )
+    IF (SELECT COUNT(*) FROM inserted) > 1
+    BEGIN
+        ROLLBACK;
+        throw 50004, 'Only one attraction can be added at once', 1;
+    END
+
+    IF NOT EXISTS (
+        SELECT * FROM OrderDetails 
+        JOIN Attractions ON OrderDetails.TripID = Attractions.TripID 
+        WHERE AttractionID=@AttractionID AND OrderID=@OrderID )
     BEGIN
         ROLLBACK;
         throw 50005, 'This attraction belongs to other trip', 1;
