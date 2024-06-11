@@ -450,52 +450,78 @@ create or alter procedure p_add_order
 as
 begin
     declare @OrderPrice money;
-    if not exists (select * from vw_aviableTrips where @TripID = TripId )
-        throw 50001, 'No aviable trip with such ID', 1;
+    begin try
+        begin transaction;
+        if not exists (select * from vw_aviableTrips where @TripID = TripId )
+            throw 50001, 'No aviable trip with such ID', 1;
 
-    if not exists (select * from Customers where @CustomerID = CustomerID )
-        throw 50002, 'No aviable customer with such ID', 1;
+        if not exists (select * from Customers where @CustomerID = CustomerID )
+            throw 50002, 'No aviable customer with such ID', 1;
 
-    if @AtendeesNumber not between 0 and (select PlacesLeft from vw_aviableTrips where @TripID = TripID)
-        throw 50003, 'Invalid amount of Atendees', 1;
+        if @AtendeesNumber not between 0 and (select PlacesLeft from vw_aviableTrips where @TripID = TripID)
+            throw 50003, 'Invalid amount of Atendees', 1;
 
-    select @OrderPrice = Price from Trips where TripID = @TripID* @AtendeesNumber;
-    insert [Orders](OrderID, CustomerID)
-    values(@orderid, @CustomerID);
-    insert [OrderDetails](OrderDetailID, OrderID, TripID,OrderDate,AttendeesNumber,OrderPrice)
-    values (@OrderDetailID,@orderID,@TripID,getdate(),@AtendeesNumber,@OrderPrice);
-end 
-);
+        select @OrderPrice = Price from Trips where TripID = @TripID* @AtendeesNumber;
+        insert [Orders](OrderID, CustomerID)
+        values(@orderid, @CustomerID);
+        insert [OrderDetails](OrderDetailID, OrderID, TripID,OrderDate,AttendeesNumber,OrderPrice)
+        values (@OrderDetailID,@orderID,@TripID,getdate(),@AtendeesNumber,@OrderPrice);
+        commit transaction;
+        end try
+        begin catch
+            if @@trancount > 0
+                rollback transaction;
+            throw;
+        end catch;
+end;
 ```
 ### Nazwa procedury: p_add_attractionOrder
 Procedura pozwala dodać zamówienie do tabeli attractions, sprawdza ona czy w widoku dostępnych wyczieczek istnieje wycieczka o wprowadzanym ID,
 czy wprowadzona jest odpowiednia ilość miejsc, oraz czy istnieje zamówienie o podawanym ID do którego przypisana atrakcja i czy ta atrakcja 
 znajduje się w obrębie wycieczki która odnosi się do zamówienie.
 ```sql
-create or alter procedure p_add_attractionOrder
-@orderID int, @AttractionOrderID int, @AttractionID int, @AtendeesNumber int
-as
-begin
-    declare @OrderPrice money;
-    declare @TripID int;
-    select @TripID = TripID from OrderDetails where OrderID = @orderID;
+CREATE OR ALTER PROCEDURE p_add_attractionOrder
+    @orderID int, 
+    @AttractionOrderID int, 
+    @AttractionID int, 
+    @AtendeesNumber int
+AS
+BEGIN
+    DECLARE @OrderPrice money;
+    DECLARE @TripID int;
 
-    if not exists (select * from vw_aviableAttraction where @AttractionID = AttractionID )
-        throw 50001, 'No aviable Attraction with such ID', 1;
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
-    if not exists (select * from Orders where @orderID = OrderID )
-        throw 50002, 'No aviable Order with such ID', 1;
+        SELECT @TripID = TripID FROM OrderDetails WHERE OrderID = @orderID;
 
-    if @AtendeesNumber not between 0 and (select PlacesLeft from vw_aviableAttraction where @AttractionID = AttractionID)
-        throw 50003, 'Invalid amount of Atendees', 1;
+        IF NOT EXISTS (SELECT * FROM vw_aviableAttraction WHERE @AttractionID = AttractionID)
+            THROW 50001, 'No aviable Attraction with such ID', 1;
 
-    if not exists (select AttractionID from Attractions where TripID = @TripID and AttractionID = @AttractionID )
-        throw 50004, 'This attraction is not aviable on that trip', 1;
-        
-    select @OrderPrice = Price from Attractions where AttractionID = @AttractionID* @AtendeesNumber;
-    insert [AttractionsOrders](AttractionOrderID,orderID,AttractionID,AttendeesNumber,OrderPrice,OrderDate)
-    values(@AttractionOrderID,@orderID,@AttractionID,@AtendeesNumber,@OrderPrice,getdate());
-end 
+        IF NOT EXISTS (SELECT * FROM Orders WHERE @orderID = OrderID)
+            THROW 50002, 'No aviable Order with such ID', 1;
+
+        IF @AtendeesNumber NOT BETWEEN 0 AND (SELECT PlacesLeft FROM vw_aviableAttraction WHERE @AttractionID = AttractionID)
+            THROW 50003, 'Invalid amount of Atendees', 1;
+
+        IF NOT EXISTS (SELECT AttractionID FROM Attractions WHERE TripID = @TripID AND AttractionID = @AttractionID)
+            THROW 50004, 'This attraction is not aviable on that trip', 1;
+
+        SELECT @OrderPrice = Price * @AtendeesNumber FROM Attractions WHERE AttractionID = @AttractionID;
+
+        INSERT INTO [AttractionsOrders] (AttractionOrderID, orderID, AttractionID, AttendeesNumber, OrderPrice, OrderDate)
+        VALUES (@AttractionOrderID, @orderID, @AttractionID, @AtendeesNumber, @OrderPrice, GETDATE());
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+
+        THROW;
+    END CATCH;
+END;
+ 
 ```
 
 ## Triggery
