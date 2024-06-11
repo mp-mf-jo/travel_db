@@ -389,7 +389,7 @@ Funkcja zwraca listę uczestników zamówienia o podanym ID zamówienia.
 create or alter function f_list_order_attendees (@OrderID int)
 returns table
 as return (
-    select AttendeeID from Attendees
+    select AttendeeID, FirstName, LastName from Attendees
     where OrderID = @OrderID
     );
 ```
