@@ -524,6 +524,87 @@ END;
  
 ```
 
+### Nazwa procedury : p_add_attendees
+
+Procedura pozwala dodać uczestnika do wycieczki, sprawdza ona czy istnieje zamówienie o podanym ID, czy zgadza się wiek uczestnika oraz czy liczba zadeklarowanych uczestników wycieczki podczas rezerwacji wycieczki nie została przekroczona.
+
+```sql
+CREATE OR ALTER PROCEDURE p_add_attendees
+    @AttendeeID int,
+    @orderID int, 
+    @FirstName nvarchar, 
+    @LastName nvarchar, 
+    @Birthday date
+AS
+BEGIN
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        SELECT OrderID FROM Orders WHERE OrderID = @orderID;
+
+        IF NOT EXISTS (SELECT * FROM Orders WHERE OrderID = @orderID)
+            THROW 50001, 'No aviable Order with such ID', 1;
+
+        IF @Birthday > getdate() or datediff(year, @Birthday, getdate()) > 120
+            THROW 50003, 'Invalid Birthdate', 1;
+
+        IF ((select (count(*)+1) from Attendees  where OrderID = @orderID group by OrderID) 
+        > (select AttendeesNumber from OrderDetails where OrderID = @orderID))
+            THROW 50004, 'Too many attendees', 1;
+
+        INSERT INTO [Attendees] (AttendeeID, OrderID, FirstName, LastName, Birthdate)
+        VALUES (@AttendeeID, @orderID, @FirstName, @LastName, @Birthday);
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+
+        THROW;
+    END CATCH;
+END;
+```
+![p_add_attendees](src/p_add_attendees.png)
+
+### Nazwa procedury: p_add_Attractionttendees
+
+Procedura pozwala dodać uczestnika do atrakcji, sprawdza ona czy istnieje uczestnik o podanym ID, czy istnieje zamówienie o podanym ID, czy liczba uczestników zadeklarowana w rezerwacji atrakcji nie została przekroczona.
+
+```sql
+CREATE OR ALTER PROCEDURE p_add_Attractionttendees
+    @AttendeeID int,
+    @AttractionOrderID int
+AS
+BEGIN
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF NOT EXISTS (SELECT * FROM Attendees WHERE AttendeeID = @AttendeeID)
+            THROW 50001, 'No aviable attendee with sych ID', 1;
+
+        IF ((select (count(*)+1) from AttractionAttendees 
+        where AttractionOrderID = @AttractionOrderID group by AttractionOrderID) 
+        > (select AttendeesNumber from AttractionsOrders where AttractionOrderID = @AttractionOrderID))
+            THROW 50002, 'Too many attendees', 1;
+
+        INSERT INTO [AttractionAttendees] (AttendeeID, AttractionOrderID)
+        VALUES (@AttendeeID, @AttractionOrderID);
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+
+        THROW;
+    END CATCH;
+END;
+```
+![p_add_Attractionttendees](src/p_add_Attractionttendees.png)
+
 ## Triggery
 
 ### Nazwa triggera: tr_beforeTripCancel
